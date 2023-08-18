@@ -1,4 +1,4 @@
-import train_dataset # train
+import train_dataset
 import torch
 import os
 import numpy as np
@@ -6,6 +6,7 @@ from io_utils import parse_args_eposide_train
 import ResNet10
 import ProtoNet
 import torch.nn as nn
+import torch.nn.functional as F  # Import the functional module
 from torch.autograd import Variable
 import utils
 import random
@@ -14,6 +15,17 @@ import warnings
 import tqdm
 warnings.filterwarnings("ignore", category=Warning)
 
+# Define the distillation loss function
+class DistillKL(nn.Module):
+    def __init__(self, T):
+        super(DistillKL, self).__init__()
+        self.T = T
+
+    def forward(self, y_s, y_t):
+        p_s = F.log_softmax(y_s / self.T, dim=1)
+        p_t = F.softmax(y_t / self.T, dim=1)
+        loss = F.kl_div(p_s, p_t, size_average=False) * (self.T ** 2) / y_s.shape[0]
+        return loss
 
 def setup_seed(seed):
     torch.manual_seed(seed)
@@ -143,7 +155,13 @@ if __name__=='__main__':
 
 
     for epoch in range(params.epoch):
-        train_loss, train_acc = train(train_loader, model, Siamese_model, head, loss_fn_ce, criterion_div, optimizer, params, teacher_model)
+        train_loss, train_acc = train(train_loader, 
+                                      model, 
+                                      Siamese_model, 
+                                      head, 
+                                      loss_fn_ce, 
+                                      optimizer, 
+                                      params, teacher_model)
         print('train:', epoch + 1, 'current epoch train loss:', train_loss, 'current epoch train acc:', train_acc)
         outfile = os.path.join(params.save_dir, '{:d}_student.tar'.format(epoch + 1))
         torch.save({
