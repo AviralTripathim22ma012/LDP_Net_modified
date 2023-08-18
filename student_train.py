@@ -42,7 +42,7 @@ def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params, 
     top1 = utils.AverageMeter()
     total_loss = 0
     softmax = torch.nn.Softmax(dim=1)
-    for i, x in tqdm.tqdm(enumerate(train_loader)):
+    for i, x, img in tqdm.tqdm(enumerate(train_loader)):
         optimizer.zero_grad() 
         #x_224 = torch.stack(x[:2]).cuda() # (2,way,shot+query,3,224,224) 
         x_96 = torch.stack(x[2:8]).cuda() # (6,way,shot+query,3,96,96)
@@ -79,6 +79,9 @@ def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params, 
         ce_loss = loss_fn(pred_query_set_anchor, query_set_y) 
 
         # divergence loss# Calculate raw predictions of the models
+        x_query = img[:, params.n_support:,:,:,:].contiguous().view(params.n_way*params.n_query, *x.size()[2:]).cuda() 
+        x_support = img[:,:params.n_support,:,:,:].contiguous().view(params.n_way*params.n_support, *x.size()[2:]).cuda() # (25, 3, 224, 224)
+        
         with torch.no_grad():
             out_support_teacher = teacher_model(x_support)
             out_query_teacher = teacher_model(x_query)
