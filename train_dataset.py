@@ -78,7 +78,10 @@ class SetDataset:
             self.sub_dataloader.append(torch.utils.data.DataLoader(sub_dataset, **sub_data_loader_params))
 
     def __getitem__(self, i):
-        return next(iter(self.sub_dataloader[i]))
+        support_set, query_set, img = next(iter(self.sub_dataloader[i]))
+        return support_set, query_set, img  # Return both crops and images
+
+        # return next(iter(self.sub_dataloader[i]))
 
     def __len__(self):
         return len(self.sub_dataloader)
