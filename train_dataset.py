@@ -129,16 +129,15 @@ class SubDataset:
                 transforms.Normalize(mean=mean, std=std)])
         
         self.sub_meta = sub_meta
-        
-    def __getitem__(self,i):
-        
+
+    
+    def __getitem__(self, i):
         imgindex = self.sub_meta[i] 
-        img,_ = self.dt[i]
+        img, _ = self.dt[i]
         multi_crops = list(map(lambda trans: trans(img), self.trans))
         raw_image = self.global_transforms(img)
         multi_crops.append(raw_image)
-        
-        return multi_crops
+        return multi_crops, raw_image
 
 
     def __len__(self):
