@@ -37,7 +37,7 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
     
 
-def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params):
+def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params, teacher_model):
     model.train()
     top1 = utils.AverageMeter()
     total_loss = 0
@@ -176,7 +176,8 @@ if __name__=='__main__':
                                       head, 
                                       loss_fn_ce, 
                                       optimizer, 
-                                      params, teacher_model)
+                                      params, 
+                                      teacher_model)
         print('train:', epoch + 1, 'current epoch train loss:', train_loss, 'current epoch train acc:', train_acc)
         outfile = os.path.join(params.save_dir, '{:d}_student.tar'.format(epoch + 1))
         torch.save({
