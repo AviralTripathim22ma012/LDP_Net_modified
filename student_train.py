@@ -94,7 +94,7 @@ def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params):
             loss_div = F.kl_div(pred_s_prob.log(), pred_t_prob, reduction='batchmean')
             return loss_div
 
-       loss_div = compute_divergence_loss(out_query, out_query_teacher)
+        loss_div = compute_divergence_loss(out_query, out_query_teacher)
 
         loss = ce_loss + loss_div
 
