@@ -42,7 +42,7 @@ def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params, 
     top1 = utils.AverageMeter()
     total_loss = 0
     softmax = torch.nn.Softmax(dim=1)
-    for i, x, img in tqdm.tqdm(enumerate(train_loader)):
+    for i, (x, img) in tqdm.tqdm(enumerate(train_loader)):
         optimizer.zero_grad() 
         #x_224 = torch.stack(x[:2]).cuda() # (2,way,shot+query,3,224,224) 
         x_96 = torch.stack(x[2:8]).cuda() # (6,way,shot+query,3,96,96)
