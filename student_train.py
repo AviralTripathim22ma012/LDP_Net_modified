@@ -78,23 +78,25 @@ def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params, 
         query_set_y = Variable(query_set_y.cuda())
         ce_loss = loss_fn(pred_query_set_anchor, query_set_y) 
 
-        # divergence loss
-        x_query = x[:, params.n_support:,:,:,:].contiguous().view(params.n_way*params.n_query, *x.size()[2:]).cuda() 
-        x_support = x[:,:params.n_support,:,:,:].contiguous().view(params.n_way*params.n_support, *x.size()[2:]).cuda()
-        out_support = model(x_support)
-        out_query = model(x_query)
-
+        # divergence loss# Calculate raw predictions of the models
         with torch.no_grad():
             out_support_teacher = teacher_model(x_support)
             out_query_teacher = teacher_model(x_query)
+            out_support_student = model(x_support)
+            out_query_student = model(x_query)
         
-        def compute_divergence_loss(pred_s, pred_t):
-            pred_s_prob = F.softmax(pred_s, dim=1)
-            pred_t_prob = F.softmax(pred_t, dim=1)
-            loss_div = F.kl_div(pred_s_prob.log(), pred_t_prob, reduction='batchmean')
-            return loss_div
+        # Softmax outputs of the models (using the same temperature)
+        T = 5.0  # Set your desired temperature
+        p_support_teacher = F.softmax(out_support_teacher / T, dim=1)
+        p_query_teacher = F.softmax(out_query_teacher / T, dim=1)
+        p_support_student = F.softmax(out_support_student / T, dim=1)
+        p_query_student = F.softmax(out_query_student / T, dim=1)
+        
+        # Calculate KL divergence loss
+        loss_fn = DistillKL(T)
+        loss_div = loss_fn(p_support_student, p_support_teacher) + loss_fn(p_query_student, p_query_teacher)
 
-        loss_div = compute_divergence_loss(out_query, out_query_teacher)
+    
 
         loss = ce_loss + loss_div
 
