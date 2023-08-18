@@ -13,6 +13,8 @@ import random
 import copy
 import warnings
 import tqdm
+from torch.optim.lr_scheduler import StepLR
+
 warnings.filterwarnings("ignore", category=Warning)
 
 # Define the distillation loss function
@@ -76,26 +78,32 @@ def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params):
         query_set_y = Variable(query_set_y.cuda())
         ce_loss = loss_fn(pred_query_set_anchor, query_set_y) 
 
+        # divergence loss
+        x_query = x[:, params.n_support:,:,:,:].contiguous().view(params.n_way*params.n_query, *x.size()[2:]).cuda() 
+        x_support = x[:,:params.n_support,:,:,:].contiguous().view(params.n_way*params.n_support, *x.size()[2:]).cuda()
+        out_support = model(x_support)
+        out_query = model(x_query)
 
-        # Compute teacher predictions
         with torch.no_grad():
-            logit_t = teacher_model(input)  # Assuming input is appropriately defined
+            out_support_teacher = teacher_model(x_support)
+            out_query_teacher = teacher_model(x_query)
+        
+        def compute_divergence_loss(pred_s, pred_t):
+            pred_s_prob = F.softmax(pred_s, dim=1)
+            pred_t_prob = F.softmax(pred_t, dim=1)
+            loss_div = F.kl_div(pred_s_prob.log(), pred_t_prob, reduction='batchmean')
+            return loss_div
 
-        # Compute distillation loss using teacher's predictions
-        loss_div = criterion_div(pred_query_set_anchor, logit_t)
-
-
+       loss_div = compute_divergence_loss(out_query, out_query_teacher)
 
         loss = ce_loss + loss_div
-
-
-
-
 
         _, predicted = torch.max(pred_query_set[0].data, 1)
         correct = predicted.eq(query_set_y.data).cpu().sum()
         top1.update(correct.item()*100 / (query_set_y.size(0)+0.0), query_set_y.size(0))  
+        
         loss.backward()
+        scheduler.step()
         optimizer.step()
 
         with torch.no_grad():
@@ -114,8 +122,13 @@ if __name__=='__main__':
     params = parse_args_eposide_train()
 
     setup_seed(params.seed)
-
-    datamgr_train = train_dataset.Eposide_DataManager(data_path=params.source_data_path, num_class=params.train_num_class, n_way=params.n_way, n_support=params.n_support, n_query=params.n_query, n_eposide=params.train_n_eposide)
+    
+    datamgr_train = train_dataset.Eposide_DataManager(data_path=params.source_data_path, 
+                                                      num_class=params.train_num_class, 
+                                                      n_way=params.n_way, 
+                                                      n_support=params.n_support, 
+                                                      n_query=params.n_query, 
+                                                      n_eposide=params.train_n_eposide)
     train_loader = datamgr_train.get_data_loader()
     #import pdb
     #pdb.set_trace()
@@ -143,6 +156,8 @@ if __name__=='__main__':
         {"params": model.parameters()},
         {"params": Siamese_model.parameters()}
     ], lr=params.lr)
+
+    scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
     # Load the teacher model
     teacher_checkpoint = torch.load('./100.tar')  # Adjust the path as needed
