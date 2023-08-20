@@ -32,7 +32,8 @@ class SetDataset:
         for cl in self.cl_list:
             self.sub_meta[cl] = []
         d = ImageFolder(self.data_path)
-        for i, (data, label) in enumerate(d):
+        import tqdm
+        for i, (data, label) in tqdm.tqdm(enumerate(d)):
             self.sub_meta[label].append(data)
 
     
