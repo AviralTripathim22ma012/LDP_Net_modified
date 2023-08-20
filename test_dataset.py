@@ -94,7 +94,7 @@ class TransformLoader:
             method = ImageJitter(self.jitter_param)
             return method
         method = getattr(transforms, transform_type)
-        if transform_type=='RandomSizedCrop':
+        if transform_type=='RandomResizedCrop':
             return method(self.image_size) 
         elif transform_type=='CenterCrop':
             return method(self.image_size) 
@@ -107,7 +107,7 @@ class TransformLoader:
 
     def get_composed_transform(self, aug = False):
         if aug:
-            transform_list = ['RandomSizedCrop', 'ImageJitter', 'RandomHorizontalFlip', 'ToTensor', 'Normalize']
+            transform_list = ['RandomResizedCrop', 'ImageJitter', 'RandomHorizontalFlip', 'ToTensor', 'Normalize']
         else:
             transform_list = ['Resize','CenterCrop', 'ToTensor', 'Normalize']
         transform_funcs = [ self.parse_transform(x) for x in transform_list]
