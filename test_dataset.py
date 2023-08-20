@@ -64,7 +64,8 @@ class SubDataset:
 
     def __getitem__(self,i):
 
-        img = self.transform(self.sub_meta[i])
+        img_index = self.transform(self.sub_meta[i])
+        img = self.transform(Image.open(img_index))  # Open the image using the index and apply transformations
         target = self.target_transform(self.cl)
         return img, target
 
