@@ -131,7 +131,7 @@ class Eposide_DataManager():
         # self.trans_loader = TransformLoader(image_size)
 
     def get_data_loader(self, aug): #parameters that would change on train/val set
-        transform = self.trans_loader.get_composed_transform(aug)
+        # transform = self.trans_loader.get_composed_transform(aug)
         dataset = SetDataset(self.data_path, self.num_class, self.batch_size, transform)
         sampler = EpisodicBatchSampler(len(dataset), self.n_way, self.n_eposide)  
         data_loader_params = dict(batch_sampler=sampler, num_workers=12, pin_memory=True)       
