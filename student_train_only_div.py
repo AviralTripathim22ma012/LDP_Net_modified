@@ -100,7 +100,7 @@ if __name__=='__main__':
                                                n_query=params.n_query, 
                                                n_eposide=params.train_n_eposide)
     
-    novel_loader = datamgr.get_data_loader() 
+    novel_loader = datamgr.get_data_loader(aug = True) 
 
     model = ResNet10.ResNet(list_of_out_dims=params.list_of_out_dims, 
                             list_of_stride=params.list_of_stride, 
