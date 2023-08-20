@@ -86,41 +86,41 @@ class EpisodicBatchSampler(object):
             yield torch.randperm(self.n_classes)[:self.n_way]
     
 
-class TransformLoader:
-    def __init__(self, image_size, 
-                 normalize_param = dict(mean= [0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-                 jitter_param = dict(Brightness=0.4, Contrast=0.4, Color=0.4)):
-        self.image_size = image_size
-        self.normalize_param = normalize_param
-        self.jitter_param = jitter_param
+# class TransformLoader:
+#     def __init__(self, image_size, 
+#                  normalize_param = dict(mean= [0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+#                  jitter_param = dict(Brightness=0.4, Contrast=0.4, Color=0.4)):
+#         self.image_size = image_size
+#         self.normalize_param = normalize_param
+#         self.jitter_param = jitter_param
     
-    def parse_transform(self, transform_type):
-        if transform_type=='ImageJitter':
-            method = ImageJitter(self.jitter_param)
-            return method
-        method = getattr(transforms, transform_type)
-        if transform_type=='RandomResizedCrop':
-            return method(self.image_size) 
-        elif transform_type=='CenterCrop':
-            return method(self.image_size) 
-        elif transform_type=='Resize':
-            return method([int(self.image_size*1.15), int(self.image_size*1.15)])
-        elif transform_type=='Normalize':
-            return method(**self.normalize_param )
-        else:
-            return method()
+#     def parse_transform(self, transform_type):
+#         if transform_type=='ImageJitter':
+#             method = ImageJitter(self.jitter_param)
+#             return method
+#         method = getattr(transforms, transform_type)
+#         if transform_type=='RandomResizedCrop':
+#             return method(self.image_size) 
+#         elif transform_type=='CenterCrop':
+#             return method(self.image_size) 
+#         elif transform_type=='Resize':
+#             return method([int(self.image_size*1.15), int(self.image_size*1.15)])
+#         elif transform_type=='Normalize':
+#             return method(**self.normalize_param )
+#         else:
+#             return method()
 
-    def get_composed_transform(self, aug = False):
-        if aug:
-            transform_list = ['RandomResizedCrop', 'ImageJitter', 'RandomHorizontalFlip', 'ToTensor', 'Normalize']
-        else:
-            transform_list = ['Resize','CenterCrop', 'ToTensor', 'Normalize']
-        transform_funcs = [ self.parse_transform(x) for x in transform_list]
-        transform = transforms.Compose(transform_funcs)
-        return transform
+#     def get_composed_transform(self, aug = False):
+#         if aug:
+#             transform_list = ['RandomResizedCrop', 'ImageJitter', 'RandomHorizontalFlip', 'ToTensor', 'Normalize']
+#         else:
+#             transform_list = ['Resize','CenterCrop', 'ToTensor', 'Normalize']
+#         transform_funcs = [ self.parse_transform(x) for x in transform_list]
+#         transform = transforms.Compose(transform_funcs)
+#         return transform
 
 class Eposide_DataManager():
-    def __init__(self, data_path, num_class, image_size, n_way=5, n_support=1, n_query=15, n_eposide=1):        
+    def __init__(self, data_path, num_class, n_way=5, n_support=1, n_query=15, n_eposide=1):        
         super(Eposide_DataManager, self).__init__()
         self.data_path = data_path
         self.num_class = num_class
@@ -128,7 +128,7 @@ class Eposide_DataManager():
         self.n_way = n_way
         self.batch_size = n_support + n_query
         self.n_eposide = n_eposide
-        self.trans_loader = TransformLoader(image_size)
+        # self.trans_loader = TransformLoader(image_size)
 
     def get_data_loader(self, aug): #parameters that would change on train/val set
         transform = self.trans_loader.get_composed_transform(aug)
