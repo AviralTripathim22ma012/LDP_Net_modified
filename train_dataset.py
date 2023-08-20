@@ -137,7 +137,7 @@ class SubDataset:
         multi_crops = list(map(lambda trans: trans(img), self.trans))
         raw_image = self.global_transforms(img)
         multi_crops.append(raw_image)
-        return multi_crops, raw_image
+        return multi_crops, raw_image, img
 
 
     def __len__(self):
