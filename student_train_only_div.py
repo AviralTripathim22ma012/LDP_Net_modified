@@ -44,7 +44,8 @@ def train(novel_loader, model, teacher_model, optimizer, params):
     top1 = utils.AverageMeter()
     total_loss = 0
     softmax = torch.nn.Softmax(dim=1)
-    for i, (x,_) in enumerate(novel_loader):
+    import tqdm
+    for i, (x,_) in tqdm.tqdm(enumerate(novel_loader)):
         # divergence loss# Calculate raw predictions of the models
         x_query = img[:, params.n_support:,:,:,:].contiguous().view(params.n_way*params.n_query, *x.size()[2:]).cuda() 
         x_support = img[:,:params.n_support,:,:,:].contiguous().view(params.n_way*params.n_support, *x.size()[2:]).cuda() # (25, 3, 224, 224)
