@@ -95,7 +95,7 @@ if __name__=='__main__':
 
     datamgr = test_dataset.Eposide_DataManager(data_path=params.source_data_path, 
                                                num_class=params.train_num_class, 
-                                               image_size=params.image_size,
+                                               # image_size=params.image_size,
                                                n_way=params.n_way, 
                                                n_support=params.n_support, 
                                                n_query=params.n_query, 
