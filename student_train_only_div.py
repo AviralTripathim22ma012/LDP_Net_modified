@@ -93,12 +93,11 @@ if __name__=='__main__':
     setup_seed(params.seed)
 
     datamgr = test_dataset.Eposide_DataManager(data_path=params.source_data_path, 
-                                               num_class=params.train_num_class, 
-                                               # image_size=params.image_size, 
+                                               num_class=params.train_num_class,                                              
                                                n_way=params.n_way, 
                                                n_support=params.n_support, 
                                                n_query=params.n_query, 
-                                               n_eposide=params.test_n_eposide)
+                                               n_eposide=params.train_n_eposide)
     
     novel_loader = datamgr.get_data_loader() 
 
@@ -107,39 +106,16 @@ if __name__=='__main__':
                             list_of_dilated_rate=params.list_of_dilated_rate)
 
     
-    # datamgr_train = test_dataset.Eposide_DataManager(data_path=params.source_data_path, 
-    #                                                   num_class=params.train_num_class, 
-    #                                                   n_way=params.n_way, 
-    #                                                   n_support=params.n_support, 
-    #                                                   n_query=params.n_query, 
-    #                                                   n_eposide=params.train_n_eposide)
-    # train_loader = datamgr_train.get_data_loader()
-    #import pdb
-    #pdb.set_trace()
-    # model = ResNet10.ResNet(list_of_out_dims=params.list_of_out_dims, 
-    #                         list_of_stride=params.list_of_stride, 
-    #                         list_of_dilated_rate=params.list_of_dilated_rate)
-
-    # head = ProtoNet.ProtoNet()
-
     if not os.path.isdir(params.save_dir):
         os.makedirs(params.save_dir)
 
     tmp = torch.load(params.pretrain_model_path)
     state = tmp['state']
     model.load_state_dict(state)
-    # Siamese_model = copy.deepcopy(model)
-    model = model.cuda()
-    # Siamese_model = Siamese_model.cuda()
-    # head = head.cuda()
+    model = model.cuda()    
 
-    # loss_fn_ce = nn.CrossEntropyLoss().cuda()
-    
-
-    optimizer = torch.optim.Adam([
-        {"params": model.parameters()},
-        {"params": Siamese_model.parameters()}
-    ], lr=params.lr)
+    optimizer = torch.optim.Adam([{"params":model.parameters()}], 
+                                 lr=params.lr)
 
     scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
