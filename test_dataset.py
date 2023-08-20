@@ -124,7 +124,7 @@ class Eposide_DataManager():
         super(Eposide_DataManager, self).__init__()
         self.data_path = data_path
         self.num_class = num_class
-        self.image_size = image_size
+        # self.image_size = image_size
         self.n_way = n_way
         self.batch_size = n_support + n_query
         self.n_eposide = n_eposide
