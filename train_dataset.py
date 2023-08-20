@@ -137,7 +137,9 @@ class SubDataset:
         multi_crops = list(map(lambda trans: trans(img), self.trans))
         raw_image = self.global_transforms(img)
         multi_crops.append(raw_image)
-        return multi_crops, raw_image, img
+        img_tensor = transforms.ToTensor()(img)
+
+        return multi_crops, raw_image, img_tensor
 
 
     def __len__(self):
