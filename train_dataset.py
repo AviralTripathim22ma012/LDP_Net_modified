@@ -78,8 +78,9 @@ class SetDataset:
             self.sub_dataloader.append(torch.utils.data.DataLoader(sub_dataset, **sub_data_loader_params))
 
     def __getitem__(self, i):
-        support_set, query_set, img = next(iter(self.sub_dataloader[i]))
-        return support_set, query_set, img  # Return both crops and images
+        # support_set, query_set, img = next(iter(self.sub_dataloader[i]))
+        multi_crops, img = next(iter(self.sub_dataloader[i]))
+        return multi_crops, img  # Return both crops and images
 
         # return next(iter(self.sub_dataloader[i]))
 
@@ -139,7 +140,7 @@ class SubDataset:
         multi_crops.append(raw_image)
         img_tensor = transforms.ToTensor()(img)
 
-        return multi_crops, raw_image, img_tensor
+        return multi_crops, img_tensor
 
 
     def __len__(self):
