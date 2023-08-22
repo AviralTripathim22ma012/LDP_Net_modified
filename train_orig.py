@@ -1,4 +1,4 @@
-import train_dataset # train
+import train_dataset_orig # train
 import torch
 import os
 import numpy as np
@@ -117,7 +117,7 @@ if __name__=='__main__':
 
     setup_seed(params.seed)
 
-    datamgr_train = train_dataset.Eposide_DataManager(data_path=params.source_data_path, num_class=params.train_num_class, n_way=params.n_way, n_support=params.n_support, n_query=params.n_query, n_eposide=params.train_n_eposide)
+    datamgr_train = train_dataset_orig.Eposide_DataManager(data_path=params.source_data_path, num_class=params.train_num_class, n_way=params.n_way, n_support=params.n_support, n_query=params.n_query, n_eposide=params.train_n_eposide)
     train_loader = datamgr_train.get_data_loader()
     #import pdb
     #pdb.set_trace()
