@@ -91,7 +91,8 @@ def train(train_loader, model, Siamese_model, head, loss_fn, optimizer, params):
         
         cross_image_loss = torch.mean(torch.sum(torch.log(pred_query_set_local**(-pred_query_set_global)), dim=1))
 
-
+        import pdb
+        pdb.set_trace()
         loss = ce_loss + self_image_loss  * params.lamba1 + cross_image_loss * params.lamba2
 
         _, predicted = torch.max(pred_query_set[0].data, 1)
