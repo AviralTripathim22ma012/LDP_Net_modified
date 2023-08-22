@@ -50,7 +50,7 @@ def get_color_distortion(s=0.5):
     color_distort = transforms.Compose([rnd_color_jitter, rnd_gray])
     return color_distort
 
-import tqdm    
+    
 class SetDataset:
     def __init__(self, data_path, num_class, batch_size):
         self.sub_meta = {}
@@ -60,29 +60,22 @@ class SetDataset:
         for cl in self.cl_list:
             self.sub_meta[cl] = []
         d = ImageFolder(self.data_path)
-        self.dt = d #
-        #import pdb
-        #pdb.set_trace()
-        for i, (data, label) in tqdm.tqdm(enumerate(d)):
-            self.sub_meta[label].append(i)#(data)
+        for i, (data, label) in enumerate(d):
+            self.sub_meta[label].append(data)
         for key, item in self.sub_meta.items():
             print (len(self.sub_meta[key]))
-        #pdb.set_trace()
+    
         self.sub_dataloader = [] 
         sub_data_loader_params = dict(batch_size = batch_size,
                                   shuffle = True,
                                   num_workers = 0, #use main thread only or may receive multiple batches
                                   pin_memory = False)        
-        for cl in tqdm.tqdm(self.cl_list):
-            sub_dataset = SubDataset(self.sub_meta[cl],self.dt)
+        for cl in self.cl_list:
+            sub_dataset = SubDataset(self.sub_meta[cl])
             self.sub_dataloader.append(torch.utils.data.DataLoader(sub_dataset, **sub_data_loader_params))
 
     def __getitem__(self, i):
-        # support_set, query_set, img = next(iter(self.sub_dataloader[i]))
-        multi_crops, img = next(iter(self.sub_dataloader[i]))
-        return multi_crops, img  # Return both crops and images
-
-        # return next(iter(self.sub_dataloader[i]))
+        return next(iter(self.sub_dataloader[i]))
 
     def __len__(self):
         return len(self.sub_dataloader)
@@ -90,7 +83,7 @@ class SetDataset:
 
 class SubDataset:
     def __init__(self, 
-        sub_meta, dt,
+        sub_meta, 
         size_crops=[224, 96],
         nmb_crops=[2, 6],
         min_scale_crops=[0.14, 0.05],
@@ -99,9 +92,7 @@ class SubDataset:
         assert len(size_crops) == len(nmb_crops)
         assert len(min_scale_crops) == len(nmb_crops)
         assert len(max_scale_crops) == len(nmb_crops)
-        #import pdb
-        #pdb.set_trace()
-        self.dt=dt
+        
         color_transform = [get_color_distortion(), PILRandomGaussianBlur()]
         mean = [0.485, 0.456, 0.406]
         std = [0.229, 0.224, 0.225]
@@ -130,17 +121,15 @@ class SubDataset:
                 transforms.Normalize(mean=mean, std=std)])
         
         self.sub_meta = sub_meta
-
-    
-    def __getitem__(self, i):
-        imgindex = self.sub_meta[i] 
-        img, _ = self.dt[i]
+        
+    def __getitem__(self,i):
+        
+        img = self.sub_meta[i] 
         multi_crops = list(map(lambda trans: trans(img), self.trans))
         raw_image = self.global_transforms(img)
         multi_crops.append(raw_image)
-        img_tensor = transforms.ToTensor()(img)
-
-        return multi_crops, img_tensor
+        
+        return multi_crops
 
 
     def __len__(self):
